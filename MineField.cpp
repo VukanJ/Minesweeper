@@ -1,7 +1,9 @@
 #include "MineField.hpp"
 
 
-MineField::MineField(int w, int h, int mines) :  width(w), height(h) {
+MineField::MineField(int w, int h, int mines) 
+    : width(w), height(h)
+{
     win = newwin(height + 2, width + 2, win_offset_y, win_offset_x);
     box(win, 0, 0);
     refresh();
@@ -14,14 +16,15 @@ MineField::MineField(int w, int h, int mines) :  width(w), height(h) {
     plantMines(mines);
 
     // Init colors
-    init_pair(Color::HIDDEN, COLOR_BLACK, COLOR_WHITE); // reversed
-    init_pair(Color::EMPTY,  COLOR_BLACK, COLOR_BLACK); // standard
-    init_pair(Color::NUMBER, COLOR_MAGENTA,  COLOR_BLACK);
-    init_pair(Color::FLAG,   COLOR_BLUE,  COLOR_CYAN);
-    init_pair(Color::MINE,   COLOR_WHITE, COLOR_RED);
+    init_pair(Color::HIDDEN, COLOR_BLACK,   COLOR_WHITE); // reversed
+    init_pair(Color::EMPTY,  COLOR_BLACK,   COLOR_BLACK); // standard
+    init_pair(Color::NUMBER, COLOR_MAGENTA, COLOR_BLACK);
+    init_pair(Color::FLAG,   COLOR_BLUE,    COLOR_CYAN);
+    init_pair(Color::MINE,   COLOR_WHITE,   COLOR_RED);
 }
 
-void MineField::draw() const {
+void MineField::draw() const
+{
     for (int r = 1; r < height + 1; ++r) {
         for (int c = 1; c < width + 1; ++c) {
             mvwaddch(win, r, c, field[r][c].ch() | COLOR_PAIR(field[r][c].chattr()));
@@ -30,7 +33,8 @@ void MineField::draw() const {
     wrefresh(win);
 }
 
-void MineField::user_LMB(int x, int y) {
+void MineField::user_LMB(int x, int y)
+{
     bool valid = mouse_windowpos(x, y);
     if (!valid) return;
 
@@ -58,7 +62,8 @@ void MineField::user_LMB(int x, int y) {
     draw();
 }
 
-void MineField::user_MMB(int x, int y) {
+void MineField::user_MMB(int x, int y)
+{
     bool valid = mouse_windowpos(x, y);
     if (!valid) return;
 
@@ -81,7 +86,8 @@ void MineField::user_RMB(int x, int y)
     draw();
 }
 
-void MineField::draw_truth() const {
+void MineField::draw_truth() const
+{
     for (int r = 1; r < height + 1; ++r) {
         for (int c = 1; c < width + 1; ++c) {
             mvwaddch(win, r, c, field[r][c].ch_truth() | COLOR_PAIR(field[r][c].chattr_truth()));
@@ -90,13 +96,15 @@ void MineField::draw_truth() const {
     wrefresh(win);
 }
 
-bool MineField::validPos(int x, int y) const {
+bool MineField::validPos(int x, int y) const
+{
     if (x < 1 || y < 1) return false;
     if (x > width || y > height) return false;
     return true;
 }
 
-int MineField::countFlagsAt(int x, int y) const {
+int MineField::countFlagsAt(int x, int y) const
+{
     // This function is not called if user tries to dig flag
     int nf = 0;
     for (int i = y - 1; i < y + 2; ++i) {
@@ -109,7 +117,8 @@ int MineField::countFlagsAt(int x, int y) const {
     return nf;
 }
 
-int MineField::countCovered(int x, int y) const {
+int MineField::countCovered(int x, int y) const
+{
     // This function is not called if user tries to dig flag
     int nc = 0;
     for (int i = y - 1; i < y + 2; ++i) {
@@ -122,7 +131,8 @@ int MineField::countCovered(int x, int y) const {
     return nc;
 }
 
-void MineField::autoDig(int x, int y) {
+void MineField::autoDig(int x, int y)
+{
     // Reveal squares around a given number if it is satisfied by flags
     auto nf = countFlagsAt(x, y);
     if (nf == field[y][x].num) {
@@ -150,7 +160,8 @@ void MineField::autoDig(int x, int y) {
     }
 }
 
-void MineField::autoFlag(int x, int y) {
+void MineField::autoFlag(int x, int y)
+{
     auto nc = countCovered(x, y);
     if (nc == field[y][x].num) {
         for (int i = y - 1; i < y + 2; ++i) {
@@ -166,18 +177,21 @@ void MineField::autoFlag(int x, int y) {
 
 }
 
-void MineField::GameOver() const {
+void MineField::GameOver() const
+{
     printw("GAME OVER");
     draw_truth();
 }
 
-bool MineField::mouse_windowpos(int& x, int& y) const {
+bool MineField::mouse_windowpos(int& x, int& y) const
+{
     x -= win_offset_x;
     y -= win_offset_y;
     return validPos(x, y);
 }
 
-void MineField::plantMines(int amt) {
+void MineField::plantMines(int amt)
+{
     assert(amt > 0);
     assert(amt <= width * height);
 
@@ -234,20 +248,24 @@ void MineField::flood_dig(int startx, int starty)
 }
 
 
-void MineField::Square::inc() {
+void MineField::Square::inc()
+{
     num = num < 9 ? num + 1 : 8;
 }
 
-void MineField::Square::dec() {
+void MineField::Square::dec()
+{
     num = num == 0 ? 0 : num - 1;
 }
 
-void MineField::Square::cleared() {
+void MineField::Square::cleared()
+{
     clear = 1;
     quest = flag = 0;
 }
 
-char MineField::Square::ch() const {
+char MineField::Square::ch() const
+{
     if (clear) {
         if (num > 0) {
             return '0' + num;
@@ -268,7 +286,8 @@ char MineField::Square::ch() const {
 
 }
 
-char MineField::Square::ch_truth() const {
+char MineField::Square::ch_truth() const
+{
     if (mine) {
         return '*';
     }
@@ -285,7 +304,8 @@ char MineField::Square::ch_truth() const {
 
 }
 
-attr_t MineField::Square::chattr() const {
+attr_t MineField::Square::chattr() const
+{
     if (clear) {
         if (num > 0) {
             return Color::NUMBER;
@@ -299,7 +319,8 @@ attr_t MineField::Square::chattr() const {
 
 }
 
-attr_t MineField::Square::chattr_truth() const {
+attr_t MineField::Square::chattr_truth() const
+{
     if (clear) {
         if (num > 0) {
             return Color::NUMBER;
