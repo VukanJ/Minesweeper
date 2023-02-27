@@ -13,14 +13,19 @@ MineField::MineField(int w, int h, int mines)
         row.resize(width + 2);
     }
 
+    totalMines = mines;
+    minesLeft = mines;
+    numFlags = 0;
+
     plantMines(mines);
 
     // Init colors
-    init_pair(Color::HIDDEN, COLOR_BLACK,   COLOR_WHITE); // reversed
+    init_pair(Color::HIDDEN, COLOR_BLACK, COLOR_WHITE); // reversed
     init_pair(Color::EMPTY,  COLOR_BLACK,   COLOR_BLACK); // standard
     init_pair(Color::NUMBER, COLOR_MAGENTA, COLOR_BLACK);
     init_pair(Color::FLAG,   COLOR_BLUE,    COLOR_CYAN);
     init_pair(Color::MINE,   COLOR_WHITE,   COLOR_RED);
+    init_pair(Color::WIN,    COLOR_GREEN,   COLOR_BLACK);
 }
 
 void MineField::draw() const
@@ -30,6 +35,7 @@ void MineField::draw() const
             mvwaddch(win, r, c, field[r][c].ch() | COLOR_PAIR(field[r][c].chattr()));
         }
     }
+    printStatus();
     wrefresh(win);
 }
 
@@ -81,6 +87,7 @@ void MineField::user_RMB(int x, int y)
         autoFlag(x, y);
     }
     else if (s.clear == 0) {
+        numFlags -= 2 * s.flag - 1;
         s.flag = s.flag ? 0 : 1;
     }
     draw();
@@ -147,7 +154,7 @@ void MineField::autoDig(int x, int y)
                 }
                 if (s.clear == 0 && s.flag == 0) {
                     if (s.num == 0) {
-                        s.cleared();
+                        // s.cleared();
                         flood_dig(j, i);
                     }
                     else {
@@ -166,9 +173,12 @@ void MineField::autoFlag(int x, int y)
     if (nc == field[y][x].num) {
         for (int i = y - 1; i < y + 2; ++i) {
             for (int j = x - 1; j < x + 2; ++j) {
+                if (validPos(j, i)) {
                 auto& s = field[i][j];
-                if (s.clear == 0 && s.flag == 0) {
-                    s.flag = 1;
+                    if (s.clear == 0 && s.flag == 0) {
+                        numFlags += 1;
+                        s.flag = 1;
+                    }
                 }
             }
         }
@@ -236,7 +246,7 @@ void MineField::flood_dig(int startx, int starty)
                 for (int j = x - 1; j < x + 2; ++j) {
                     // Check position validity
                     if (validPos(j, i)) {
-                        if (field[i][j].clear == 0) {
+                        if (field[i][j].clear == 0 && field[i][j].flag == 0) {
                             field[i][j].cleared();
                             visit.push({j, i});
                         }
@@ -280,7 +290,7 @@ char MineField::Square::ch() const
             return '?';
         }
         else {
-            return ' ';
+            return '`';
         }
     }
 
@@ -332,4 +342,26 @@ attr_t MineField::Square::chattr_truth() const
         if (mine) return Color::MINE | A_BLINK | A_BOLD;
         return Color::HIDDEN;
     }
+}
+
+void MineField::printStatus() const
+{
+    mvprintw(height + 2, 0, "Mines left: %i", minesLeft - numFlags);
+    clrtoeol();
+
+    // Win condition = Number of covered cells == number of mines
+    int covered = 0;
+    for (int r = 1; r < height + 1; ++r) {
+        for (int c = 1; c < width + 1; ++c) {
+            covered += 1 - field[r][c].clear;
+        }
+    }
+    if (covered == totalMines) {
+        move(0, 0);
+        attron(COLOR_PAIR(Color::WIN));
+        printw("YOU WIN");
+        attroff(COLOR_PAIR(Color::WIN));
+    }
+
+    move(0, 0);
 }

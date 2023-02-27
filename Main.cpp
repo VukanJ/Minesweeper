@@ -29,7 +29,7 @@ int main()
     init_ncurses();
 
     // MineField mf(60, 20, 170);
-    MineField mf(30, 10, 30);
+    MineField mf(30, 5, 10);
     mf.draw();
 
     move(0,  0);
@@ -38,7 +38,7 @@ int main()
 
     MEVENT mevent;
 
-    while(true) {
+    while (true) {
         int c = getch();
         if (c == KEY_MOUSE) {
             if (getmouse(&mevent) == OK) {

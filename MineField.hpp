@@ -18,10 +18,14 @@ class MineField {
             NUMBER,     // Number
             FLAG,       // Flag color
             MINE,       // Exploded mine
+            WIN,        // Win text
         };
         MineField(int w, int h, int mines);
 
         void draw() const;
+        void draw_rect(int x1, int y1, int x2, int y2) const;
+        void inline draw_char(int x, int y) const;
+
         void draw_truth() const;
         void user_LMB(int x, int y);
         void user_MMB(int x, int y);
@@ -58,8 +62,14 @@ class MineField {
         void updateMineValue(int x, int y);
         void flood_dig(int startx, int starty);
 
+        void printStatus() const;
+
         int width;
         int height;
+
+        int totalMines;
+        int minesLeft;
+        int numFlags;
     
         std::vector<std::vector<Square>> field;
         std::mt19937 rng{(long unsigned int)time(0)};
