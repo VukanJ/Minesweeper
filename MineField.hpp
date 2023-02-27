@@ -31,6 +31,10 @@ class MineField {
         void user_MMB(int x, int y);
         void user_RMB(int x, int y);
 
+        void reset_startnew(int mines);
+
+        bool GameEnded() const;
+
         WINDOW* win;
     private:
         int win_offset_x = 0;
@@ -70,6 +74,7 @@ class MineField {
         int totalMines;
         int minesLeft;
         int numFlags;
+        mutable bool isGameOver = false;
     
         std::vector<std::vector<Square>> field;
         std::mt19937 rng{(long unsigned int)time(0)};

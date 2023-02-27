@@ -1,4 +1,5 @@
 #include "MineField.hpp"
+#include <curses.h>
 
 
 MineField::MineField(int w, int h, int mines) 
@@ -26,6 +27,22 @@ MineField::MineField(int w, int h, int mines)
     init_pair(Color::FLAG,   COLOR_BLUE,    COLOR_CYAN);
     init_pair(Color::MINE,   COLOR_WHITE,   COLOR_RED);
     init_pair(Color::WIN,    COLOR_GREEN,   COLOR_BLACK);
+}
+
+void MineField::reset_startnew(int mines)
+{
+    totalMines = mines;
+    minesLeft = mines;
+    numFlags = 0;
+    isGameOver = false;
+
+    for (auto& row : field) {
+        std::fill(row.begin(), row.end(), Square{});
+    }
+
+    plantMines(mines);
+    box(win, 0, 0);
+    draw();
 }
 
 void MineField::draw() const
@@ -189,8 +206,9 @@ void MineField::autoFlag(int x, int y)
 
 void MineField::GameOver() const
 {
-    printw("GAME OVER");
+    printw("GAME OVER -- Press R to restart");
     draw_truth();
+    isGameOver = true;
 }
 
 bool MineField::mouse_windowpos(int& x, int& y) const
@@ -359,9 +377,15 @@ void MineField::printStatus() const
     if (covered == totalMines) {
         move(0, 0);
         attron(COLOR_PAIR(Color::WIN));
-        printw("YOU WIN");
+        printw("YOU WIN -- Press R to restart");
         attroff(COLOR_PAIR(Color::WIN));
+        isGameOver = true;
     }
 
     move(0, 0);
+}
+
+bool MineField::GameEnded() const
+{
+    return isGameOver;
 }

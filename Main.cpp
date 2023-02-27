@@ -29,10 +29,12 @@ int main()
     init_ncurses();
 
     // MineField mf(60, 20, 170);
-    MineField mf(30, 5, 10);
+    int mines = 10;
+
+    MineField mf(30, 5, mines);
     mf.draw();
 
-    move(0,  0);
+    move(0, 0);
 
     refresh();
 
@@ -40,18 +42,27 @@ int main()
 
     while (true) {
         int c = getch();
-        if (c == KEY_MOUSE) {
-            if (getmouse(&mevent) == OK) {
-                if (mevent.bstate & BUTTON1_PRESSED) {
-                    mf.user_LMB(mevent.x, mevent.y);
+        if (!mf.GameEnded()) {
+            if (c == KEY_MOUSE) {
+                if (mf.GameEnded()) {
+                    mf.reset_startnew(mines);
+                    continue;
                 }
-                else if (mevent.bstate & BUTTON2_PRESSED) {
-                    mf.user_MMB(mevent.x, mevent.y);
-                }
-                else if (mevent.bstate & BUTTON3_PRESSED) {
-                    mf.user_RMB(mevent.x, mevent.y);
+                else if (getmouse(&mevent) == OK) {
+                    if (mevent.bstate & BUTTON1_PRESSED) {
+                        mf.user_LMB(mevent.x, mevent.y);
+                    }
+                    else if (mevent.bstate & BUTTON2_PRESSED) {
+                        mf.user_MMB(mevent.x, mevent.y);
+                    }
+                    else if (mevent.bstate & BUTTON3_PRESSED) {
+                        mf.user_RMB(mevent.x, mevent.y);
+                    }
                 }
             }
+        }
+        else if (c == 'r') {
+            mf.reset_startnew(mines);
         }
     }
 
